@@ -20,4 +20,3 @@ export async function transformImage(file: File): Promise<Blob | null> {
     return null
   }
 }
-
