@@ -1,19 +1,43 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef } from "react"
 import { Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface ImageUploaderProps {
-  onImageUpload: (file: File) => void
-}
-
-export default function ImageUploader({ onImageUpload }: ImageUploaderProps) {
+export default function ImageUploader() {
   const [isDragging, setIsDragging] = useState(false)
   const [isShining, setIsShining] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const uploadToBackend = async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const response = await fetch("https://ghibli-backend.vercel.app/transform", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        console.error("Failed:", await response.text())
+        return
+      }
+
+      const blob = await response.blob()
+      const imageUrl = URL.createObjectURL(blob)
+      console.log("Transformed Image URL:", imageUrl)
+
+      // Optional: Show image preview
+      const imgWindow = window.open()
+      if (imgWindow) {
+        imgWindow.document.write(`<img src="${imageUrl}" style="max-width: 100%;" />`)
+      }
+
+    } catch (error) {
+      console.error("Error uploading image:", error)
+    }
+  }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -31,7 +55,7 @@ export default function ImageUploader({ onImageUpload }: ImageUploaderProps) {
     setIsDragging(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onImageUpload(e.dataTransfer.files[0])
+      uploadToBackend(e.dataTransfer.files[0])
     }
 
     setTimeout(() => setIsShining(false), 1000)
@@ -39,7 +63,7 @@ export default function ImageUploader({ onImageUpload }: ImageUploaderProps) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      onImageUpload(e.target.files[0])
+      uploadToBackend(e.target.files[0])
     }
     setIsShining(true)
     setTimeout(() => setIsShining(false), 1000)
@@ -90,4 +114,3 @@ export default function ImageUploader({ onImageUpload }: ImageUploaderProps) {
     </div>
   )
 }
-
