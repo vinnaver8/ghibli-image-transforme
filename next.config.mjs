@@ -13,14 +13,15 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export', // <- THIS makes it a static export
+  images: {
+    unoptimized: true,
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
   },
   experimental: {
     webpackBuildWorker: true,
